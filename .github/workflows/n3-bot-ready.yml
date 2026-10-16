@@ -9,7 +9,9 @@ on:
         required: true
         type: string
 permissions:
+  contents: write
   pull-requests: write
+  issues: write
 jobs:
   mark-ready:
     runs-on: ubuntu-latest
