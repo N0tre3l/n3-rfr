@@ -1,0 +1,24 @@
+name: n3-bot-ready
+# N3 probe: mark a human-authored draft PR ready USING the workflow token,
+# so the resulting ready_for_review event is performed by github-actions[bot].
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: PR number to mark ready for review
+        required: true
+        type: string
+permissions:
+  pull-requests: write
+jobs:
+  mark-ready:
+    runs-on: ubuntu-latest
+    steps:
+      - name: mark ready as the workflow bot
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PRN: ${{ inputs.pr_number }}
+        run: |
+          NODE_ID=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PRN" --jq .node_id)
+          echo "marking $PRN ($NODE_ID) ready as $GITHUB_ACTOR"
+          gh api graphql -f query='mutation($id: ID!) { markPullRequestReadyForReview(input: {pullRequestId: $id}) { pullRequest { number state isDraft } } }' -f id="$NODE_ID"

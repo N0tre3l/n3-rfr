@@ -1,0 +1,24 @@
+name: n3-bot-draft
+# N3 probe: create a DRAFT PR whose author is github-actions[bot].
+on: workflow_dispatch
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  make-draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: branch + draft PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BR="bot-draft-$(date +%s)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BR"
+          echo "n3 bot draft" > n3-bot-draft.txt
+          git add n3-bot-draft.txt
+          git commit -m "bot draft"
+          git push origin "$BR"
+          gh pr create --draft --title "N3 bot-authored draft" --body "RFR-1: author is github-actions[bot]" --head "$BR"
